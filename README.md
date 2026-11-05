@@ -5,7 +5,8 @@ Receives customer-registration pushes from Salesforce Commerce Cloud and stores 
 ## Endpoints
 | Method | Path | Notes |
 |---|---|---|
-| POST | `/sfcc/customers` | Needs `x-api-key`. Upserts by `customerNo` (duplicate-safe). |
+| POST | `/sfcc/customers` | Needs `x-api-key`. Body = SFCC event envelope (`dropshipper.account.created`). Upserts by `customer__customer-no` (duplicate-safe). Other event types are ignored. |
+| POST | `/pubsub/push` | Needs `x-api-key` (demo; real push uses OIDC). Body = Pub/Sub push body, envelope base64 in `message.data`. |
 | GET | `/customers` | List stored customers |
 | GET | `/customers/:id` | One customer, 404 if missing |
 

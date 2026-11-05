@@ -1,17 +1,54 @@
-### Simulate SFCC customer-registration push
-POST http://localhost:3000/sfcc/customers
+@host = http://localhost:3000
+@key = local-dev-key
+
+### 1) Direct call: SFCC event envelope as JSON (what int_google_pubsub builds)
+POST {{host}}/sfcc/customers
 content-type: application/json
-x-api-key: local-dev-key
+x-api-key: {{key}}
 
 {
-  "customerNo": "00012345",
-  "email": "jane.doe@example.com",
-  "firstName": "Jane",
-  "lastName": "Doe",
-  "phone": "+31612345678",
-  "birthday": "1990-04-12",
-  "registeredAt": "2026-11-05T10:00:00Z"
+  "eventType": "dropshipper.account.created",
+  "eventVersion": "1.0",
+  "occurredAt": "2026-11-05T10:00:00Z",
+  "source": "sfcc",
+  "correlationId": "b2c3d4e5-f6a7-4901-8cde-f12345678901",
+  "idempotencyKey": "sfcc-00012345-dropshipper.account.created",
+  "payload": {
+    "customer__customer-no": "00012345",
+    "customer__profile__first-name": "Jane",
+    "customer__profile__last-name": "Doe",
+    "customer_profile_email": "jane.doe@example.com",
+    "customer_addresses_address_phone": "+31612345678",
+    "customer_addresses_address_company-name": "Jane BV",
+    "Customer_addresses_address_country-code": "NL",
+    "country__code": "NL",
+    "customer_addresses_address_address1": "Main street 1",
+    "customer_addresses_address_address2": "",
+    "customer_addresses_address_postal-code": "1011AB",
+    "customer_addresses_address_city": "Amsterdam",
+    "customer__addresses__address__state-code": "",
+    "customer_addresses_address_region": "",
+    "customer_addresses_address_district": "",
+    "vat": "NL123456789B01",
+    "Language": "nl",
+    "sapDebtorId": "",
+    "sapCustomerNo": ""
+  }
+}
+
+### 2) Pub/Sub push style: same envelope, base64 in message.data
+# data = base64 of the envelope above (any valid envelope works)
+POST {{host}}/pubsub/push
+content-type: application/json
+x-api-key: {{key}}
+
+{
+  "message": {
+    "data": "eyJldmVudFR5cGUiOiJkcm9wc2hpcHBlci5hY2NvdW50LmNyZWF0ZWQiLCJldmVudFZlcnNpb24iOiIxLjAiLCJvY2N1cnJlZEF0IjoiMjAyNi0xMS0wNVQxMDowMDowMFoiLCJzb3VyY2UiOiJzZmNjIiwiY29ycmVsYXRpb25JZCI6ImIyYzNkNGU1LWY2YTctNDkwMS04Y2RlLWYxMjM0NTY3ODkwMSIsImlkZW1wb3RlbmN5S2V5Ijoic2ZjYy1QVVNILTAwMS1kcm9wc2hpcHBlci5hY2NvdW50LmNyZWF0ZWQiLCJwYXlsb2FkIjp7ImN1c3RvbWVyX19jdXN0b21lci1ubyI6IlBVU0gtMDAxIiwiY3VzdG9tZXJfcHJvZmlsZV9lbWFpbCI6InB1c2hAZXhhbXBsZS5jb20iLCJMYW5ndWFnZSI6Im5sIn19",
+    "messageId": "1234567890"
+  },
+  "subscription": "projects/demo/subscriptions/demo-sub"
 }
 
 ### List stored customers
-GET http://localhost:3000/customers
+GET {{host}}/customers

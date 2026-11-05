@@ -1,8 +1,16 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Customer } from './customer.entity';
-import { SfccCustomerDto } from './dto/sfcc-customer.dto';
+import { EventEnvelopeDto } from './dto/event-envelope.dto';
+import { mapSfccPayload } from './sfcc-payload.mapper';
+
+export const ACCOUNT_CREATED = 'dropshipper.account.created';
 
 @Injectable()
 export class CustomersService {
@@ -12,19 +20,47 @@ export class CustomersService {
     @InjectRepository(Customer) private readonly repo: Repository<Customer>,
   ) {}
 
-  /** Insert or update by customerNo, so SFCC retries/duplicates are safe. */
-  async upsertFromSfcc(dto: SfccCustomerDto) {
-    const existing = await this.repo.findOneBy({ customerNo: dto.customerNo });
+  /**
+   * Apply an SFCC event envelope. Only `dropshipper.account.created` is stored;
+   * other event types are acknowledged and ignored.
+   * Upserts by customerNo, so retries / duplicate deliveries are safe.
+   */
+  async handleEvent(envelope: EventEnvelopeDto) {
+    if (envelope.eventType !== ACCOUNT_CREATED) {
+      this.logger.warn(
+        `Ignoring unsupported event ${envelope.eventType} (${envelope.idempotencyKey})`,
+      );
+      return { status: 'ignored' as const };
+    }
+
+    const fields = mapSfccPayload(envelope.payload);
+    if (!fields.customerNo || !fields.email) {
+      throw new BadRequestException(
+        'payload must contain customer__customer-no and customer_profile_email',
+      );
+    }
+
+    const existing = await this.repo.findOneBy({
+      customerNo: fields.customerNo,
+    });
     const customer = this.repo.create({
       ...existing,
-      ...dto,
-      rawPayload: { ...dto },
+      ...fields,
+      lastEventType: envelope.eventType,
+      lastIdempotencyKey: envelope.idempotencyKey,
+      lastCorrelationId: envelope.correlationId,
+      lastOccurredAt: envelope.occurredAt,
+      rawPayload: envelope.payload,
     });
     const saved = await this.repo.save(customer);
     this.logger.log(
-      `${existing ? 'Updated' : 'Created'} customer ${dto.customerNo}`,
+      `${existing ? 'Updated' : 'Created'} customer ${fields.customerNo} ` +
+        `[correlationId=${envelope.correlationId}]`,
     );
-    return { created: !existing, customer: saved };
+    return {
+      status: existing ? ('updated' as const) : ('created' as const),
+      id: saved.id,
+    };
   }
 
   findAll() {
