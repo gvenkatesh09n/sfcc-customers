@@ -1,0 +1,17 @@
+### Simulate SFCC customer-registration push
+POST http://localhost:3000/sfcc/customers
+content-type: application/json
+x-api-key: local-dev-key
+
+{
+  "customerNo": "00012345",
+  "email": "jane.doe@example.com",
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "phone": "+31612345678",
+  "birthday": "1990-04-12",
+  "registeredAt": "2026-11-05T10:00:00Z"
+}
+
+### List stored customers
+GET http://localhost:3000/customers
