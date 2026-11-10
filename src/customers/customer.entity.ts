@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -19,6 +20,7 @@ export class Customer {
   @Column({ unique: true })
   customerNo: string;
 
+  @Index()
   @Column()
   email: string;
 

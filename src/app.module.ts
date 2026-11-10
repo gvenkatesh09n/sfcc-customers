@@ -10,10 +10,15 @@ import { CustomersModule } from './customers/customers.module';
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        type: 'better-sqlite3',
-        database: config.get('DB_PATH', 'customers.sqlite'),
+        type: 'postgres',
+        url: config.getOrThrow<string>('DATABASE_URL'),
+        // Render's external URL requires SSL; the internal URL does not.
+        ssl:
+          config.get('DB_SSL', 'true') === 'true'
+            ? { rejectUnauthorized: false }
+            : false,
         entities: [Customer],
-        synchronize: true, // fine for a local demo; use migrations in real envs
+        synchronize: true, // fine for a demo; use migrations in real envs
       }),
     }),
     CustomersModule,

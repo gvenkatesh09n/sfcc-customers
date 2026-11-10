@@ -67,6 +67,22 @@ export class CustomersService {
     return this.repo.find({ order: { createdAt: 'DESC' } });
   }
 
+  /**
+   * Case-insensitive email lookup. Email is not unique in our table, so this
+   * returns every match (usually 0 or 1).
+   */
+  findByEmail(email: string) {
+    const normalized = email.trim().toLowerCase();
+    if (!normalized) {
+      throw new BadRequestException('email must not be empty');
+    }
+    return this.repo
+      .createQueryBuilder('c')
+      .where('LOWER(c.email) = :email', { email: normalized })
+      .orderBy('c.createdAt', 'DESC')
+      .getMany();
+  }
+
   async findOne(id: string) {
     const customer = await this.repo.findOneBy({ id });
     if (!customer) {

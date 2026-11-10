@@ -6,6 +6,7 @@ import {
   HttpCode,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
@@ -53,8 +54,10 @@ export class CustomersController {
   }
 
   @Get('customers')
-  list() {
-    return this.customers.findAll();
+  list(@Query('email') email?: string) {
+    return email !== undefined
+      ? this.customers.findByEmail(email)
+      : this.customers.findAll();
   }
 
   @Get('customers/:id')

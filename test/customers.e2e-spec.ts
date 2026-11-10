@@ -1,4 +1,5 @@
-process.env.DB_PATH = ':memory:';
+// Needs a throwaway Postgres (never the real DB): TEST_DATABASE_URL=postgresql://...
+process.env.DATABASE_URL = process.env.TEST_DATABASE_URL ?? '';
 process.env.SFCC_API_KEY = 'test-key';
 
 import { INestApplication, ValidationPipe } from '@nestjs/common';
@@ -27,7 +28,9 @@ const envelope = (over: Record<string, unknown> = {}) => ({
   ...over,
 });
 
-describe('SFCC customers (e2e)', () => {
+const describeDb = process.env.TEST_DATABASE_URL ? describe : describe.skip;
+
+describeDb('SFCC customers (e2e)', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
