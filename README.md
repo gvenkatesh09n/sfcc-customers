@@ -7,8 +7,8 @@ Receives customer-registration pushes from Salesforce Commerce Cloud and stores 
 |---|---|---|
 | POST | `/sfcc/customers` | Needs `x-api-key`. Body = SFCC event envelope (`dropshipper.account.created`). Upserts by `customer__customer-no` (duplicate-safe). Other event types are ignored. |
 | POST | `/pubsub/push` | Needs `x-api-key` (demo; real push uses OIDC). Body = Pub/Sub push body, envelope base64 in `message.data`. |
-| GET | `/customers` | Needs `x-api-key`. List stored customers; `?email=` filters by email (case-insensitive) |
-| GET | `/customers/:id` | Needs `x-api-key`. One customer, 404 if missing |
+| GET | `/customers` | No key (open for the demo). List stored customers; `?email=` filters by email (case-insensitive) |
+| GET | `/customers/:id` | No key (open for the demo). One customer, 404 if missing |
 
 ## Run locally
 ```
