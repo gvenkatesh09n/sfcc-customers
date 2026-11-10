@@ -52,3 +52,8 @@ x-api-key: {{key}}
 
 ### List stored customers
 GET {{host}}/customers
+x-api-key: {{key}}
+
+### Look up by email
+GET {{host}}/customers?email=jane.doe@example.com
+x-api-key: {{key}}

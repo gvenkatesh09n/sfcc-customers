@@ -73,7 +73,7 @@ describeDb('SFCC customers (e2e)', () => {
       .expect(200);
     expect(second.body).toEqual({ status: 'updated', id: first.body.id });
 
-    const list = await http().get('/customers').expect(200);
+    const list = await http().get('/customers').set(key).expect(200);
     expect(list.body).toHaveLength(1);
     expect(list.body[0]).toMatchObject({
       customerNo: '00012345',
@@ -82,8 +82,8 @@ describeDb('SFCC customers (e2e)', () => {
       billingCountry: 'NL',
       vat: 'NL123456789B01',
     });
-    await http().get(`/customers/${first.body.id}`).expect(200);
-    await http().get('/customers/nope').expect(404);
+    await http().get(`/customers/${first.body.id}`).set(key).expect(200);
+    await http().get('/customers/nope').set(key).expect(404);
   });
 
   it('accepts a Pub/Sub push body with base64 data', async () => {

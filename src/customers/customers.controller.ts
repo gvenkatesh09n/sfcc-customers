@@ -54,6 +54,7 @@ export class CustomersController {
   }
 
   @Get('customers')
+  @UseGuards(ApiKeyGuard)
   list(@Query('email') email?: string) {
     return email !== undefined
       ? this.customers.findByEmail(email)
@@ -61,6 +62,7 @@ export class CustomersController {
   }
 
   @Get('customers/:id')
+  @UseGuards(ApiKeyGuard)
   get(@Param('id') id: string) {
     return this.customers.findOne(id);
   }
