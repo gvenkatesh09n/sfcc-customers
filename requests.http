@@ -40,7 +40,6 @@ x-api-key: {{key}}
 # data = base64 of the envelope above (any valid envelope works)
 POST {{host}}/pubsub/push
 content-type: application/json
-x-api-key: {{key}}
 
 {
   "message": {

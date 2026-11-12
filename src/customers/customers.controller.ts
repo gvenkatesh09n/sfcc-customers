@@ -29,10 +29,10 @@ export class CustomersController {
 
   /**
    * Pub/Sub push: same envelope, base64-encoded in message.data.
-   * Demo auth is the API key; real push subscriptions send an OIDC token (TODO month 2).
+   * TEMPORARILY UNAUTHENTICATED: Pub/Sub push can't send x-api-key.
+   * TODO: verify the OIDC token Google sends before going to production.
    */
   @Post('pubsub/push')
-  @UseGuards(ApiKeyGuard)
   @HttpCode(200)
   async push(@Body() body: PubSubPushDto) {
     let decoded: unknown;
